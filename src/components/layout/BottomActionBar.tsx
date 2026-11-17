@@ -19,16 +19,16 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
 }) => {
   const canContinue = Boolean(selectedSeat && selectedSeatSection);
 
-  let topCaption = 'Pilih sektor tribun';
-  let mainValue = `mulai ${MATCH_INFO.startingPriceFormatted}`;
+  let topCaption = 'Choose a section';
+  let mainValue = `from ${MATCH_INFO.startingPriceFormatted}`;
 
   if (selectedSeat && selectedSeatSection) {
-    topCaption = `Sek ${selectedSeat.sectionId} · Baris ${selectedSeat.row} · Kursi ${selectedSeat.seat}`;
+    topCaption = `Sec ${selectedSeat.sectionId} · Row ${selectedSeat.row} · Seat ${selectedSeat.seat}`;
     mainValue = TICKET_CATEGORIES[selectedSeatSection.category].fullPrice;
   } else if (activeSection) {
-    const tierText = activeSection.tier === 'lower' ? 'Tribun Bawah' : 'Tribun Atas';
-    topCaption = `Sektor ${activeSection.id} · ${tierText}`;
-    mainValue = 'Pilih kursi';
+    const tierText = activeSection.tier === 'lower' ? 'Lower tier' : 'Upper tier';
+    topCaption = `Section ${activeSection.id} · ${tierText}`;
+    mainValue = 'Choose a seat';
   }
 
   return (
@@ -57,7 +57,7 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
               : 'bg-[#1D1E24] text-[#5B5E6B] cursor-not-allowed'
           }`}
         >
-          Lanjut
+          Continue
         </button>
       </div>
     </div>

@@ -154,7 +154,7 @@ export const StadiumMapCanvas: React.FC<StadiumMapCanvasProps> = ({
       >
         <ChevronUp className="w-3.5 h-3.5 text-[#757886] stroke-[2]" />
         <span className="text-[10px] font-medium tracking-[0.22em] text-[#757886] uppercase mt-0.5">
-          {activeSection?.tier === 'upper' ? 'TRIBUN BAWAH · LAPANGAN' : 'LAPANGAN'}
+          {activeSection?.tier === 'upper' ? 'LOWER TIER · PITCH' : 'PITCH'}
         </span>
       </div>
 
@@ -186,7 +186,7 @@ export const StadiumMapCanvas: React.FC<StadiumMapCanvasProps> = ({
               fontWeight={500}
               letterSpacing="0.18em"
             >
-              UTARA
+              NORTH
             </text>
             <text
               x={0}
@@ -197,7 +197,7 @@ export const StadiumMapCanvas: React.FC<StadiumMapCanvasProps> = ({
               fontWeight={500}
               letterSpacing="0.18em"
             >
-              SELATAN
+              SOUTH
             </text>
             <text
               x={-224}
@@ -209,7 +209,7 @@ export const StadiumMapCanvas: React.FC<StadiumMapCanvasProps> = ({
               fontWeight={500}
               letterSpacing="0.18em"
             >
-              BARAT
+              WEST
             </text>
             <text
               x={224}
@@ -221,7 +221,7 @@ export const StadiumMapCanvas: React.FC<StadiumMapCanvasProps> = ({
               fontWeight={500}
               letterSpacing="0.18em"
             >
-              TIMUR
+              EAST
             </text>
           </g>
 
@@ -359,20 +359,20 @@ export const StadiumMapCanvas: React.FC<StadiumMapCanvasProps> = ({
         {activeSection && (
           <>
             <h2 className="text-[16px] font-semibold text-white tracking-[-0.01em]">
-              Sektor {activeSection.id}
+              Section {activeSection.id}
             </h2>
             <p className="text-[12.5px] text-[#858896] mt-0.5">
-              {activeSection.tier === 'lower' ? 'Tribun Bawah' : 'Tribun Atas'} ·{' '}
+              {activeSection.tier === 'lower' ? 'Lower tier' : 'Upper tier'} ·{' '}
               {activeSection.standLabel}
             </p>
             <div className="mt-2.5 flex items-center gap-5 text-[12px] text-[#9A9DAA]">
               <span className="flex items-center gap-1.5">
                 <span className="w-[8.5px] h-[8.5px] rounded-[2px] bg-[#747784]" />
-                Tersedia
+                Available
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-[8.5px] h-[8.5px] rounded-[2px] bg-[#25262E] border border-white/10" />
-                Terisi
+                Taken
               </span>
             </div>
           </>

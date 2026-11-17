@@ -87,11 +87,11 @@ function createGbkScoreboardTexture(): THREE.CanvasTexture {
   ctx.lineWidth = 4;
   ctx.strokeRect(6, 6, 1012, 428);
 
-  // Top header: "EL CLASICO INDONESIA · KICK-OFF"
+  // Top header: "THE CLASSIC · GBK JAKARTA · KICK-OFF"
   ctx.fillStyle = '#F5CA37';
   ctx.font = '700 26px Inter, system-ui, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('EL CLASICO INDONESIA   ·   GBK SENAYAN', 512, 98);
+  ctx.fillText('THE CLASSIC   ·   GBK JAKARTA   ·   KICK-OFF', 512, 98);
 
   // Center kickoff time: "19:00"
   ctx.fillStyle = '#FFFFFF';

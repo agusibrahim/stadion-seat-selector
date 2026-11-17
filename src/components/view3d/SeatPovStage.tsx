@@ -134,7 +134,7 @@ export const SeatPovStage = React.forwardRef<SeatPovStageHandle, SeatPovStagePro
                 <div className="h-[36px] sm:h-[38px] px-3.5 sm:px-4 rounded-full bg-[#14151B]/75 backdrop-blur-md border border-white/[0.1] flex items-center gap-2 shadow-[0_6px_20px_rgba(0,0,0,0.35)] max-w-full">
                   <span className="w-2 h-2 rounded-full bg-[#F5CA37] shadow-[0_0_8px_#F5CA37] shrink-0" />
                   <span className="text-[clamp(12px,3.4vw,13px)] font-medium text-white tracking-[-0.01em] truncate">
-                    Pandangan {section.id} · Baris {seat.row} · Kursi {seat.seat}
+                    View from {section.id} · Row {seat.row} · Seat {seat.seat}
                   </span>
                 </div>
               </div>
@@ -159,7 +159,7 @@ export const SeatPovStage = React.forwardRef<SeatPovStageHandle, SeatPovStagePro
             >
               <div className="h-[33px] px-3.5 rounded-full bg-[#101218]/78 backdrop-blur-md border border-white/[0.1] flex items-center gap-2 text-[12px] font-medium text-white/95 shadow-[0_4px_16px_rgba(0,0,0,0.4)] whitespace-nowrap">
                 <MoveHorizontal className="w-4 h-4 text-white/80 stroke-[1.9]" />
-                <span>Geser untuk melihat sekeliling</span>
+                <span>Drag to look around</span>
               </div>
             </div>
 

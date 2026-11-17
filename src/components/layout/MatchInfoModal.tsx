@@ -34,7 +34,7 @@ export const MatchInfoModal: React.FC<MatchInfoModalProps> = ({ open, onClose })
           <button
             type="button"
             onClick={onClose}
-            aria-label="Tutup informasi"
+            aria-label="Close modal"
             className="w-8 h-8 rounded-full bg-white/[0.07] flex items-center justify-center text-white/80 hover:bg-white/[0.14] cursor-pointer"
           >
             <X className="w-4 h-4" />
@@ -43,7 +43,7 @@ export const MatchInfoModal: React.FC<MatchInfoModalProps> = ({ open, onClose })
 
         <div className="mt-4 space-y-2.5 border-t border-white/[0.08] pt-4">
           <p className="text-[12px] font-medium text-[#8B8E9E] uppercase tracking-wider">
-            Kategori Tiket SUGBK (Zona 1–12)
+            Ticket Categories (Zones 1–12)
           </p>
           {CATEGORY_LIST.map((cat) => (
             <div
@@ -58,10 +58,10 @@ export const MatchInfoModal: React.FC<MatchInfoModalProps> = ({ open, onClose })
                 <span className="text-white font-medium shrink-0">{cat.label}</span>
                 <span className="text-[#7F8393] text-[12px] truncate">
                   {cat.id === 1
-                    ? 'VIP Barat & Timur Bawah'
+                    ? 'Lower West & East VIP stands'
                     : cat.id === 2
-                      ? 'Utara/Selatan Bawah & Barat/Timur Atas'
-                      : 'Tribun Atas Utara, Selatan & Sudut'}
+                      ? 'Lower goal ends & upper sidelines'
+                      : 'Upper goal ends & curves'}
                 </span>
               </div>
               <span className="text-white font-semibold shrink-0">{cat.fullPrice}</span>
@@ -70,8 +70,8 @@ export const MatchInfoModal: React.FC<MatchInfoModalProps> = ({ open, onClose })
         </div>
 
         <p className="mt-4 text-[12px] text-[#757989] leading-relaxed">
-          Pilih sektor pada denah oval Gelora Bung Karno, tentukan kursi yang tersedia,
-          lalu tekan <strong className="text-white/90">Lanjut</strong> untuk zoom-in nyata ke pandangan 3D dari kursi Anda.
+          Tap any section on the Gelora Bung Karno oval map, pick an available seat,
+          and press <strong className="text-white/90">Continue</strong> to zoom directly into your 3D seat view.
         </p>
       </div>
     </div>

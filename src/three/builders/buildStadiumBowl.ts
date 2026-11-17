@@ -65,7 +65,7 @@ function createMidTierLedTexture(): THREE.CanvasTexture {
   let x = 20;
   while (x < 1000) {
     ctx.fillStyle = '#F8FAFC';
-    const segment = `STADION UTAMA GELORA BUNG KARNO   ·   PERSIB VS PERSIJA   ·   ${MATCH_INFO.kickoffTime}   ·   `;
+    const segment = `GELORA BUNG KARNO MAIN STADIUM   ·   PERSIB VS PERSIJA   ·   ${MATCH_INFO.kickoffTime}   ·   `;
     ctx.fillText(segment, x, 28);
     x += ctx.measureText(segment).width + 12;
   }
