@@ -82,10 +82,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                 }}
               />
               <span className="text-[#A0A3B1] font-medium">{cat.label}</span>
-              <span className="text-white font-semibold">
-                {MATCH_INFO.currency}
-                {cat.price}
-              </span>
+              <span className="text-white font-semibold">{cat.shortPrice}</span>
             </button>
           );
         })}

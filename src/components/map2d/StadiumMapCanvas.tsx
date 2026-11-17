@@ -46,17 +46,7 @@ function getTargetCameraForSection(section: SectionDefinition): Camera2DState {
   const geo = SECTION_GEOMETRIES_2D.get(section.id);
   if (!geo) return OVERVIEW_CAM;
 
-  const isCorner =
-    (section.slotIndex >= 6 && section.slotIndex <= 10) ||
-    (section.slotIndex >= 14 && section.slotIndex <= 18) ||
-    (section.slotIndex >= 25 && section.slotIndex <= 29) ||
-    (section.slotIndex >= 33 && section.slotIndex <= 37);
-
-  const scale = isCorner
-    ? section.tier === 'upper'
-      ? 5.45
-      : 5.9
-    : 6.25;
+  const scale = section.tier === 'upper' ? 5.65 : 6.05;
 
   return {
     cx: geo.center.x,
@@ -154,7 +144,7 @@ export const StadiumMapCanvas: React.FC<StadiumMapCanvasProps> = ({
         }
       }}
     >
-      {/* Stage 2 Top Direction Indicator ("^ PITCH" or "^ LOWER TIER · PITCH") */}
+      {/* Stage 2 Top Direction Indicator */}
       <div
         className={`pointer-events-none absolute top-2 left-0 right-0 z-20 flex flex-col items-center transition-all duration-300 ${
           stage === 'section' && activeSection
@@ -164,13 +154,13 @@ export const StadiumMapCanvas: React.FC<StadiumMapCanvasProps> = ({
       >
         <ChevronUp className="w-3.5 h-3.5 text-[#757886] stroke-[2]" />
         <span className="text-[10px] font-medium tracking-[0.22em] text-[#757886] uppercase mt-0.5">
-          {activeSection?.tier === 'upper' ? 'LOWER TIER · PITCH' : 'PITCH'}
+          {activeSection?.tier === 'upper' ? 'TRIBUN BAWAH · LAPANGAN' : 'LAPANGAN'}
         </span>
       </div>
 
-      {/* Crisp Vector Stadium SVG with velocity motion blur & 3D dive handoff */}
+      {/* Crisp Vector SUGBK Oval Stadium SVG */}
       <svg
-        viewBox="-244 -300 488 600"
+        viewBox="-242 -310 484 620"
         className={`w-full h-full max-h-full transition-transform duration-300 ease-in ${
           isDivingTo3D ? 'scale-[1.12]' : 'scale-100'
         }`}
@@ -185,53 +175,53 @@ export const StadiumMapCanvas: React.FC<StadiumMapCanvasProps> = ({
         preserveAspectRatio="xMidYMid meet"
       >
         <g transform={groupTransform}>
-          {/* Compass Labels (Overview) */}
+          {/* SUGBK Stand Compass Labels (Overview) */}
           <g style={{ opacity: compassOpacity }} className="pointer-events-none select-none">
             <text
               x={0}
-              y={-284}
+              y={-293}
               textAnchor="middle"
               fill="#6E717E"
               fontSize={9.5}
               fontWeight={500}
               letterSpacing="0.18em"
             >
-              NORTH
+              UTARA
             </text>
             <text
               x={0}
-              y={292}
+              y={301}
               textAnchor="middle"
               fill="#6E717E"
               fontSize={9.5}
               fontWeight={500}
               letterSpacing="0.18em"
             >
-              SOUTH
+              SELATAN
             </text>
             <text
-              x={-228}
+              x={-224}
               y={0}
-              transform="rotate(-90 -228 0)"
+              transform="rotate(-90 -224 0)"
               textAnchor="middle"
               fill="#6E717E"
               fontSize={9.5}
               fontWeight={500}
               letterSpacing="0.18em"
             >
-              WEST
+              BARAT
             </text>
             <text
-              x={228}
+              x={224}
               y={0}
-              transform="rotate(90 228 0)"
+              transform="rotate(90 224 0)"
               textAnchor="middle"
               fill="#6E717E"
               fontSize={9.5}
               fontWeight={500}
               letterSpacing="0.18em"
             >
-              EAST
+              TIMUR
             </text>
           </g>
 
@@ -282,7 +272,7 @@ export const StadiumMapCanvas: React.FC<StadiumMapCanvasProps> = ({
             let isImmediateSideNeighbor = false;
             if (activeSection && sec.tier === activeSection.tier && sec.id !== activeSection.id) {
               const slotDiff = Math.abs(sec.slotIndex - activeSection.slotIndex);
-              isImmediateSideNeighbor = slotDiff === 1 || slotDiff === 37;
+              isImmediateSideNeighbor = slotDiff === 1 || slotDiff === 35;
             }
 
             const showLabel =
@@ -369,20 +359,20 @@ export const StadiumMapCanvas: React.FC<StadiumMapCanvasProps> = ({
         {activeSection && (
           <>
             <h2 className="text-[16px] font-semibold text-white tracking-[-0.01em]">
-              Section {activeSection.id}
+              Sektor {activeSection.id}
             </h2>
             <p className="text-[12.5px] text-[#858896] mt-0.5">
-              {activeSection.tier === 'lower' ? 'Lower tier' : 'Upper tier'} ·{' '}
+              {activeSection.tier === 'lower' ? 'Tribun Bawah' : 'Tribun Atas'} ·{' '}
               {activeSection.standLabel}
             </p>
             <div className="mt-2.5 flex items-center gap-5 text-[12px] text-[#9A9DAA]">
               <span className="flex items-center gap-1.5">
                 <span className="w-[8.5px] h-[8.5px] rounded-[2px] bg-[#747784]" />
-                Available
+                Tersedia
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-[8.5px] h-[8.5px] rounded-[2px] bg-[#25262E] border border-white/10" />
-                Taken
+                Terisi
               </span>
             </div>
           </>

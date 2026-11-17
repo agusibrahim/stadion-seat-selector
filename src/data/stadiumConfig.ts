@@ -1,75 +1,100 @@
 import type { CategoryId, SectionDefinition, TierType } from '../types/stadium';
 
-export const TOTAL_SLOTS = 38;
+/**
+ * Stadion Utama Gelora Bung Karno (SUGBK) Topology
+ * ------------------------------------------------
+ * 36 Elliptical Radial Sectors = 12 Official GBK Zones (Zona 1..12) × 3 Sectors/Zone:
+ * - Slots 0..5   : Tribun Barat (VIP Barat Utama, halfway line between 103 & 104)
+ * - Slots 6..8   : Ka. Barat Laut (108 = NW Marathon Tunnel)
+ * - Slots 9..14  : Tribun Utara (North Curve behind goal, center between 112 & 113)
+ * - Slots 15..17 : Ka. Timur Laut (117 = NE Marathon Tunnel)
+ * - Slots 18..23 : Tribun Timur (VIP Timur Utama, halfway line between 121 & 122)
+ * - Slots 24..26 : Ka. Tenggara (126 = SE Marathon Tunnel)
+ * - Slots 27..32 : Tribun Selatan (South Curve behind goal, center between 130 & 131)
+ * - Slots 33..35 : Ka. Barat Daya (135 = SW Marathon Tunnel)
+ */
+export const TOTAL_SLOTS = 36;
 
 /**
- * Unnumbered / closed architectural blocks visible in the reference stadium map:
- * - Lower tier corner vomitoria/tunnels: 109 (NW), 116 (NE), 128 (SE)
- * - Upper tier press / VIP broadcast boxes: 203 (West), 222 & 223 (East)
+ * Architectural openings in SUGBK:
+ * - Lower tier 4 Olympic Marathon Gates / Vomitoria: 108 (NW), 117 (NE), 126 (SE), 135 (SW)
+ * - Upper tier VVIP Garuda Royal / Broadcast Tribune recess: 203, 204 (Barat Center)
  */
-const BLOCKED_SECTION_IDS = new Set<number>([109, 116, 128, 203, 222, 223]);
+const BLOCKED_SECTION_IDS = new Set<number>([108, 117, 126, 135, 203, 204]);
 
-function getStandMetadata(slotIndex: number, tier: TierType): {
+function computeZonaNumber(slotIndex: number): number {
+  // Zona 1 starts at Barat Tengah-Utara (slot 3) and wraps clockwise 1..12
+  const shifted = (slotIndex - 3 + TOTAL_SLOTS) % TOTAL_SLOTS;
+  return Math.floor(shifted / 3) + 1;
+}
+
+function getGbkStandMetadata(
+  slotIndex: number,
+  zona: number,
+  tier: TierType,
+): {
   standLabel: string;
   zoneBadge: string;
   category: CategoryId;
 } {
-  // Slot topology around the 38-slot loop:
-  // 0..5   : West straight (101..106 / 201..206), halfway between 2 and 3 (103/104)
-  // 6..10  : North-west corner (107..111 / 207..211) -> note 111/211 transitions into North
-  // 11..13 : North end straight (112..114 / 212..214)
-  // 14..18 : North-east corner (115..119 / 215..219)
-  // 19..24 : East straight (120..125 / 220..225), halfway between 21 and 22 (122/123)
-  // 25..29 : South-east corner (126..130 / 226..230)
-  // 30..32 : South end straight (131..133 / 231..233)
-  // 33..37 : South-west corner (134..138 / 234..238)
+  const isBaratMain = slotIndex >= 0 && slotIndex <= 5;
+  const isTimurMain = slotIndex >= 18 && slotIndex <= 23;
+  const isBaratCenter = slotIndex === 2 || slotIndex === 3;
+  const isTimurCenter = slotIndex === 20 || slotIndex === 21;
+  const isUtaraMain = slotIndex >= 10 && slotIndex <= 13;
+  const isSelatanMain = slotIndex >= 28 && slotIndex <= 31;
 
-  const isWestStraight = slotIndex >= 0 && slotIndex <= 5;
-  const isEastStraight = slotIndex >= 19 && slotIndex <= 24;
-  const isHalfwayCenter =
-    slotIndex === 2 || slotIndex === 3 || slotIndex === 21 || slotIndex === 22;
-
-  // Stand description (shown in Stage 2 subtitle, e.g. "Upper tier · North-east corner")
-  let standLabel = 'Stadium bowl';
-  if (slotIndex >= 0 && slotIndex <= 5) {
-    standLabel = 'West stand';
+  let standName = 'Tribun Sudut';
+  if (isBaratMain) {
+    standName = tier === 'lower' ? 'VIP Barat' : 'Tribun Barat Atas';
   } else if (slotIndex >= 6 && slotIndex <= 9) {
-    standLabel = 'North-west corner';
-  } else if (slotIndex >= 10 && slotIndex <= 14) {
-    standLabel = 'North end';
-  } else if (slotIndex >= 15 && slotIndex <= 18) {
-    standLabel = 'North-east corner';
-  } else if (slotIndex >= 19 && slotIndex <= 24) {
-    standLabel = 'East stand';
-  } else if (slotIndex >= 25 && slotIndex <= 28) {
-    standLabel = 'South-east corner';
-  } else if (slotIndex >= 29 && slotIndex <= 33) {
-    standLabel = 'South end';
+    standName = 'Barat Laut';
+  } else if (isUtaraMain) {
+    standName = 'Tribun Utara';
+  } else if (slotIndex >= 14 && slotIndex <= 17) {
+    standName = 'Timur Laut';
+  } else if (isTimurMain) {
+    standName = tier === 'lower' ? 'VIP Timur' : 'Tribun Timur Atas';
+  } else if (slotIndex >= 24 && slotIndex <= 27) {
+    standName = 'Tenggara';
+  } else if (isSelatanMain) {
+    standName = 'Tribun Selatan';
   } else {
-    standLabel = 'South-west corner';
+    standName = 'Barat Daya';
   }
 
-  // Strategic zone badge (shown in gold uppercase in Stage 3 bottom sheet)
-  let zoneBadge = 'SIDE STAND';
-  if (isHalfwayCenter) {
-    zoneBadge = tier === 'lower' ? 'HALFWAY LINE' : 'UPPER HALFWAY';
-  } else if (isWestStraight || isEastStraight) {
-    zoneBadge = tier === 'lower' ? 'SIDE STAND' : 'UPPER STAND';
-  } else if (
-    (slotIndex >= 10 && slotIndex <= 14) ||
-    (slotIndex >= 29 && slotIndex <= 33)
-  ) {
-    zoneBadge = tier === 'lower' ? 'BEHIND THE GOAL' : 'UPPER GOAL END';
-  } else {
-    zoneBadge = tier === 'lower' ? 'LOWER CORNER' : 'UPPER CORNER';
+  const standLabel = `${standName} · Zona ${zona}`;
+
+  let zoneBadge = `ZONA ${zona} · ${standName.toUpperCase()}`;
+  if (isBaratCenter && tier === 'lower') {
+    zoneBadge = `VIP BARAT UTAMA · ZONA ${zona}`;
+  } else if (isTimurCenter && tier === 'lower') {
+    zoneBadge = `VIP TIMUR UTAMA · ZONA ${zona}`;
+  } else if (isUtaraMain) {
+    zoneBadge = `TRIBUN UTARA · ZONA ${zona}`;
+  } else if (isSelatanMain) {
+    zoneBadge = `TRIBUN SELATAN · ZONA ${zona}`;
+  } else if (tier === 'upper') {
+    zoneBadge = `TRIBUN ATAS · ZONA ${zona}`;
   }
 
-  // Pricing category matching exact map brightness in reference video
+  // SUGBK Ticket Pricing Categories:
+  // - Cat 1 (VIP Rp450rb): Lower Barat (101..106) & Lower Timur Tengah (120..123)
+  // - Cat 2 (Cat 1 Rp250rb): Lower Timur Sayap (119, 124), Upper Barat & Timur (201..206, 219..224), Lower Utara/Selatan Tengah
+  // - Cat 3 (Cat 2 Rp125rb): Upper Utara/Selatan & all corner sectors
   let category: CategoryId = 3;
   if (tier === 'lower') {
-    category = isWestStraight || isEastStraight ? 1 : 2;
+    if (isBaratMain || (slotIndex >= 19 && slotIndex <= 22)) {
+      category = 1;
+    } else {
+      category = 2;
+    }
   } else {
-    category = isWestStraight || isEastStraight ? 2 : 3;
+    if (isBaratMain || isTimurMain) {
+      category = 2;
+    } else {
+      category = 3;
+    }
   }
 
   return { standLabel, zoneBadge, category };
@@ -80,14 +105,20 @@ export const ALL_SECTIONS: SectionDefinition[] = (() => {
 
   for (const tier of ['lower', 'upper'] as const) {
     const baseId = tier === 'lower' ? 101 : 201;
-    const rows = tier === 'lower' ? 24 : 20;
+    const rows = tier === 'lower' ? 22 : 20;
 
     for (let slotIndex = 0; slotIndex < TOTAL_SLOTS; slotIndex++) {
       const id = baseId + slotIndex;
-      const { standLabel, zoneBadge, category } = getStandMetadata(slotIndex, tier);
+      const zona = computeZonaNumber(slotIndex);
+      const { standLabel, zoneBadge, category } = getGbkStandMetadata(
+        slotIndex,
+        zona,
+        tier,
+      );
       sections.push({
         id,
         slotIndex,
+        zona,
         tier,
         category,
         available: !BLOCKED_SECTION_IDS.has(id),

@@ -3,29 +3,39 @@ import { MATCH_INFO } from '../../data/matchInfo';
 import { TOTAL_SLOTS } from '../../data/stadiumConfig';
 import { evaluateBowlSlot3D, STADIUM_3D } from '../../geometry/spatialMetrics';
 
-function createRoofTrussTexture(): THREE.CanvasTexture {
+/**
+ * SUGBK Iconic "Temu Gelang" Radial Steel-Ribbed Canopy Texture
+ */
+function createTemuGelangRoofTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
   canvas.height = 512;
   const ctx = canvas.getContext('2d')!;
 
-  ctx.fillStyle = '#151822';
+  const grad = ctx.createLinearGradient(0, 0, 0, 512);
+  grad.addColorStop(0, '#1B1F2B');
+  grad.addColorStop(0.75, '#242A38');
+  grad.addColorStop(1, '#2E3546');
+  ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 512, 512);
 
-  // Structural roof coffers / steel ribs (visible in frames 015, 030, 057)
-  ctx.strokeStyle = '#252A38';
-  ctx.lineWidth = 6;
-  const cols = 8;
-  const rows = 6;
-  for (let i = 0; i <= cols; i++) {
-    const x = (i * 512) / cols;
+  // Prominent radial structural steel ribs converging toward the inner oval ring
+  ctx.strokeStyle = '#384156';
+  ctx.lineWidth = 8;
+  const radialRibs = 8;
+  for (let i = 0; i <= radialRibs; i++) {
+    const x = (i * 512) / radialRibs;
     ctx.beginPath();
     ctx.moveTo(x, 0);
     ctx.lineTo(x, 512);
     ctx.stroke();
   }
-  for (let j = 0; j <= rows; j++) {
-    const y = (j * 512) / rows;
+
+  // Secondary circumferential purlin rings
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+  ctx.lineWidth = 4;
+  for (let j = 1; j < 6; j++) {
+    const y = (j * 512) / 6;
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(512, y);
@@ -35,8 +45,8 @@ function createRoofTrussTexture(): THREE.CanvasTexture {
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(22, 2);
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.repeat.set(18, 1);
   return tex;
 }
 
@@ -49,60 +59,66 @@ function createFloodlightStripTexture(): THREE.CanvasTexture {
   ctx.fillStyle = '#141720';
   ctx.fillRect(0, 0, 512, 64);
 
-  // Segmented bright stadium roof floodlight modules
   const count = 16;
   const w = 512 / count;
   for (let i = 0; i < count; i++) {
-    ctx.fillStyle = '#F8FAFF';
-    ctx.fillRect(i * w + 4, 12, w - 8, 40);
+    ctx.fillStyle = '#FFFDF7';
+    ctx.fillRect(i * w + 4, 10, w - 8, 44);
   }
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.wrapS = THREE.RepeatWrapping;
   tex.wrapT = THREE.ClampToEdgeWrapping;
-  tex.repeat.set(28, 1);
+  tex.repeat.set(30, 1);
   return tex;
 }
 
-function createScoreboardTexture(): THREE.CanvasTexture {
+function createGbkScoreboardTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 1024;
   canvas.height = 440;
   const ctx = canvas.getContext('2d')!;
 
-  // Deep pitch-black OLED scoreboard casing
   ctx.fillStyle = '#07080D';
   ctx.fillRect(0, 0, 1024, 440);
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.14)';
   ctx.lineWidth = 4;
   ctx.strokeRect(6, 6, 1012, 428);
 
-  // Top header: "THE FINAL   KICK-OFF"
-  ctx.fillStyle = '#8C92A4';
-  ctx.font = '600 28px Inter, system-ui, sans-serif';
+  // Top header: "EL CLASICO INDONESIA · KICK-OFF"
+  ctx.fillStyle = '#F5CA37';
+  ctx.font = '700 26px Inter, system-ui, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('THE FINAL     KICK-OFF', 512, 108);
+  ctx.fillText('EL CLASICO INDONESIA   ·   GBK SENAYAN', 512, 98);
 
-  // Center kickoff time: "20:45"
+  // Center kickoff time: "19:00"
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '700 116px Inter, system-ui, sans-serif';
-  ctx.fillText(MATCH_INFO.kickoffTime, 512, 238);
+  ctx.font = '700 112px Inter, system-ui, sans-serif';
+  ctx.fillText(MATCH_INFO.scoreboardTime, 512, 228);
 
-  // Bottom teams row: "BARCELONA   —   MILAN"
-  ctx.font = '700 42px Inter, system-ui, sans-serif';
+  // Bottom teams row: "PERSIB   —   PERSIJA" with signature club color bars
+  ctx.font = '700 46px Inter, system-ui, sans-serif';
   ctx.fillStyle = '#FFFFFF';
   ctx.textAlign = 'right';
-  ctx.fillText('BARCELONA', 442, 345);
+  ctx.fillText('PERSIB', 438, 342);
+
+  // Persib Maung Bandung Blue bar
+  ctx.fillStyle = '#2563EB';
+  ctx.fillRect(256, 362, 182, 8);
 
   ctx.textAlign = 'center';
   ctx.fillStyle = '#94A3B8';
-  ctx.fillText('—', 512, 345);
+  ctx.fillText('—', 512, 342);
 
   ctx.textAlign = 'left';
   ctx.fillStyle = '#FFFFFF';
-  ctx.fillText('MILAN', 582, 345);
+  ctx.fillText('PERSIJA', 586, 342);
+
+  // Persija Macan Kemayoran Red-Orange bar
+  ctx.fillStyle = '#EA580C';
+  ctx.fillRect(586, 362, 200, 8);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -111,7 +127,6 @@ function createScoreboardTexture(): THREE.CanvasTexture {
 }
 
 export interface RoofHandle {
-  /** Fades/hides roof overhead geometry while the aerial zoom camera is above roof elevation */
   updateForCameraAltitude: (cameraY: number) => void;
   dispose: () => void;
 }
@@ -121,18 +136,16 @@ export function buildRoofAndScreens(scene: THREE.Scene): RoofHandle {
   const roofGroup = new THREE.Group();
   scene.add(roofGroup);
 
-  const outerRun = STADIUM_3D.upperOuterRun + 0.9; // ~36.7m
-  const innerRun = 2.0; // overhangs deep over the stands to frame the pitch & sky
-  const outerY = 30.8;
-  const innerY = 31.6;
-  const segments = 152;
+  const outerRun = STADIUM_3D.upperOuterRun + 1.0;
+  const innerRun = 2.8; // Iconic Temu Gelang deep cantilevered oval ring
+  const outerY = 31.0;
+  const innerY = 32.8;
+  const segments = 180;
 
-  // 1. Overhanging structural roof canopy
   const roofPositions: number[] = [];
   const roofUvs: number[] = [];
   const roofIndices: number[] = [];
 
-  // 2. Inner floodlight fascia strip along inner lip of roof
   const lightPositions: number[] = [];
   const lightUvs: number[] = [];
   const lightIndices: number[] = [];
@@ -151,11 +164,10 @@ export function buildRoofAndScreens(scene: THREE.Scene): RoofHandle {
     );
     roofUvs.push(u, 0, u, 1);
 
-    // Angled floodlight bezel at inner roof lip
     lightPositions.push(
-      f.x + f.nx * (innerRun + 0.8),
-      innerY - 0.55,
-      f.z + f.nz * (innerRun + 0.8),
+      f.x + f.nx * (innerRun + 0.9),
+      innerY - 0.6,
+      f.z + f.nz * (innerRun + 0.9),
       f.x + f.nx * innerRun,
       innerY + 0.15,
       f.z + f.nz * innerRun,
@@ -175,7 +187,7 @@ export function buildRoofAndScreens(scene: THREE.Scene): RoofHandle {
   roofGeo.setIndex(roofIndices);
   roofGeo.computeVertexNormals();
 
-  const roofTex = createRoofTrussTexture();
+  const roofTex = createTemuGelangRoofTexture();
   const roofMat = new THREE.MeshBasicMaterial({
     map: roofTex,
     side: THREE.DoubleSide,
@@ -197,22 +209,21 @@ export function buildRoofAndScreens(scene: THREE.Scene): RoofHandle {
   roofGroup.add(new THREE.Mesh(lightGeo, lightMat));
   disposables.push(lightGeo, lightTex, lightMat);
 
-  // 3. Giant Hanging Jumbotron Scoreboards suspended from North & South roof lips
-  const screenTex = createScoreboardTexture();
+  // Giant Hanging Utara & Selatan SUGBK Jumbotrons
+  const screenTex = createGbkScoreboardTexture();
   const screenMat = new THREE.MeshBasicMaterial({ map: screenTex });
   const casingMat = new THREE.MeshBasicMaterial({ color: '#090B10' });
-  const screenW = 19.5;
-  const screenH = 8.4;
+  const screenW = 21.0;
+  const screenH = 9.0;
 
   const casingGeo = new THREE.BoxGeometry(screenW + 0.5, screenH + 0.5, 0.7);
   const faceGeo = new THREE.PlaneGeometry(screenW, screenH);
   disposables.push(screenTex, screenMat, casingMat, casingGeo, faceGeo);
 
-  const northRoofZ = -(STADIUM_3D.straightHalfZ + STADIUM_3D.cornerRadiusZ + innerRun - 1.5);
-  const southRoofZ = STADIUM_3D.straightHalfZ + STADIUM_3D.cornerRadiusZ + innerRun - 1.5;
+  const northRoofZ = -(STADIUM_3D.innerRadiusZ + innerRun - 1.5);
+  const southRoofZ = STADIUM_3D.innerRadiusZ + innerRun - 1.5;
   const screenY = innerY - screenH / 2 - 0.35;
 
-  // North scoreboard (facing South +Z, plus rear face so never blank edge-on)
   const northGroup = new THREE.Group();
   northGroup.position.set(0, screenY, northRoofZ);
   northGroup.add(new THREE.Mesh(casingGeo, casingMat));
@@ -224,7 +235,6 @@ export function buildRoofAndScreens(scene: THREE.Scene): RoofHandle {
   northGroup.add(northFace, northRear);
   scene.add(northGroup);
 
-  // South scoreboard (facing North -Z, plus rear face)
   const southGroup = new THREE.Group();
   southGroup.position.set(0, screenY, southRoofZ);
   southGroup.rotation.y = Math.PI;
@@ -239,9 +249,7 @@ export function buildRoofAndScreens(scene: THREE.Scene): RoofHandle {
 
   return {
     updateForCameraAltitude: (cameraY: number) => {
-      // Hide overhanging roof truss while camera is above roof height (aerial zoom phase)
-      // so the camera never looks through the roof top; show immediately below Y = 30.2m!
-      roofGroup.visible = cameraY < 30.2;
+      roofGroup.visible = cameraY < 30.8;
     },
     dispose: () => {
       disposables.forEach((d) => d.dispose());

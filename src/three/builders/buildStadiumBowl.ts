@@ -60,12 +60,12 @@ function createMidTierLedTexture(): THREE.CanvasTexture {
   ctx.fillStyle = '#D4A73A';
   ctx.fillRect(0, 56, 1024, 6);
 
-  ctx.font = '700 22px Inter, system-ui, sans-serif';
+  ctx.font = '700 21px Inter, system-ui, sans-serif';
   ctx.textBaseline = 'middle';
   let x = 20;
   while (x < 1000) {
-    ctx.fillStyle = '#E2E8F0';
-    const segment = `${MATCH_INFO.stageTitle}   ·   ${MATCH_INFO.kickoffTime}   ·   `;
+    ctx.fillStyle = '#F8FAFC';
+    const segment = `STADION UTAMA GELORA BUNG KARNO   ·   PERSIB VS PERSIJA   ·   ${MATCH_INFO.kickoffTime}   ·   `;
     ctx.fillText(segment, x, 28);
     x += ctx.measureText(segment).width + 12;
   }
@@ -259,9 +259,9 @@ export function buildStadiumBowl(scene: THREE.Scene): StadiumBowlHandle {
   });
   disposables.push(concreteMat, darkWallMat);
 
-  // 1. Stepped Lower & Upper concrete bowls
-  const lowerStepsGeo = buildSteppedTierGeometry('lower', 24);
-  const upperStepsGeo = buildSteppedTierGeometry('upper', 20);
+  // 1. Stepped Lower (22 rows) & Upper (20 rows) concrete oval bowls
+  const lowerStepsGeo = buildSteppedTierGeometry('lower', 22, 180);
+  const upperStepsGeo = buildSteppedTierGeometry('upper', 20, 180);
   scene.add(new THREE.Mesh(lowerStepsGeo, concreteMat));
   scene.add(new THREE.Mesh(upperStepsGeo, concreteMat));
   disposables.push(lowerStepsGeo, upperStepsGeo);
@@ -321,13 +321,14 @@ export function buildStadiumBowl(scene: THREE.Scene): StadiumBowlHandle {
   scene.add(new THREE.Mesh(backWallGeo, darkWallMat));
   disposables.push(backWallGeo);
 
-  // 6. InstancedMesh 3D Royal-Blue Stadium Seats (1-to-1 unified with 2D `getSeatsForSection`!)
+  // 6. InstancedMesh 3D SUGBK Merah-Putih (Red & White) Wave-Mosaic Stadium Seats!
   const seatTransforms: Array<{
     seatId: string;
     x: number;
     y: number;
     z: number;
     rotY: number;
+    isWhite: boolean;
     shade: number;
   }> = [];
 
@@ -341,6 +342,16 @@ export function buildStadiumBowl(scene: THREE.Scene): StadiumBowlHandle {
       const rawSlot = section.slotIndex + (1 - s.u);
       const pos = sampleTierPosition3D(rawSlot, section.tier, vNorm);
       const rotY = Math.atan2(pos.frame.nx, pos.frame.nz);
+
+      // Authentic SUGBK Senayan dynamic Merah-Putih wave + pixel mosaic
+      const theta = (rawSlot / TOTAL_SLOTS) * Math.PI * 2;
+      const waveHeight =
+        0.54 +
+        0.22 * Math.sin(theta * 3.0) +
+        0.1 * Math.cos(theta * 6.0 + (section.tier === 'upper' ? 1.4 : 0));
+      const tierV = section.tier === 'upper' ? 0.35 + vNorm * 0.65 : vNorm * 0.85;
+      const hash = ((section.id * 31 + s.row * 17 + s.seat * 29) % 19) / 19;
+      const isWhite = tierV + (hash - 0.5) * 0.34 > waveHeight;
       const shade = ((section.id * 17 + s.row * 7 + s.seat * 13) % 9) / 9;
 
       seatTransforms.push({
@@ -349,6 +360,7 @@ export function buildStadiumBowl(scene: THREE.Scene): StadiumBowlHandle {
         y: pos.y - 0.16,
         z: pos.z,
         rotY,
+        isWhite,
         shade,
       });
     }
@@ -357,7 +369,7 @@ export function buildStadiumBowl(scene: THREE.Scene): StadiumBowlHandle {
   const seatGeo = createSingleSeatGeometry();
   const seatMat = new THREE.MeshStandardMaterial({
     color: '#FFFFFF',
-    roughness: 0.52,
+    roughness: 0.5,
     metalness: 0.08,
   });
 
@@ -368,8 +380,10 @@ export function buildStadiumBowl(scene: THREE.Scene): StadiumBowlHandle {
   );
 
   const dummy = new THREE.Object3D();
-  const colorA = new THREE.Color('#1537A8');
-  const colorB = new THREE.Color('#1E47CC');
+  const redDark = new THREE.Color('#B51C29');
+  const redBright = new THREE.Color('#DC2638');
+  const whiteCool = new THREE.Color('#DCE2EC');
+  const whitePure = new THREE.Color('#F4F6FA');
   const tempColor = new THREE.Color();
   const seatIndexById = new Map<string, number>();
   const savedMatrices = new Map<number, THREE.Matrix4>();
@@ -383,7 +397,11 @@ export function buildStadiumBowl(scene: THREE.Scene): StadiumBowlHandle {
     instancedSeats.setMatrixAt(i, dummy.matrix);
     seatIndexById.set(t.seatId, i);
 
-    tempColor.copy(colorA).lerp(colorB, t.shade);
+    if (t.isWhite) {
+      tempColor.copy(whiteCool).lerp(whitePure, t.shade);
+    } else {
+      tempColor.copy(redDark).lerp(redBright, t.shade);
+    }
     instancedSeats.setColorAt(i, tempColor);
   }
 

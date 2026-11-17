@@ -1,9 +1,14 @@
 import * as THREE from 'three';
 import { MATCH_INFO } from '../../data/matchInfo';
-import { evaluateBowlSlot3D, STADIUM_3D } from '../../geometry/spatialMetrics';
-import { TOTAL_SLOTS } from '../../data/stadiumConfig';
+import { STADIUM_3D } from '../../geometry/spatialMetrics';
 
-function createPitchTexture(): THREE.CanvasTexture {
+/**
+ * SUGBK Arena Floor Texture:
+ * - Outer dark concrete moat
+ * - Authentic 8-lane terracotta brick-red 400m Olympic running track with white lane ovals
+ * - Lush green D-zones & 18-stripe FIFA 68m × 105m football pitch
+ */
+function createGbkArenaTexture(): THREE.CanvasTexture {
   const isMobile =
     typeof window !== 'undefined' &&
     (window.innerWidth <= 540 || window.matchMedia?.('(pointer: coarse)').matches);
@@ -15,89 +20,142 @@ function createPitchTexture(): THREE.CanvasTexture {
   const w = canvas.width;
   const h = canvas.height;
 
-  // Base apron green
-  ctx.fillStyle = '#2B7F3E';
+  // World plane spans 114m (X: -57..+57) × 168m (Z: -84..+84)
+  const worldW = 114;
+  const worldL = 168;
+  const sx = w / worldW;
+  const sy = h / worldL;
+  const cx = w / 2;
+  const cy = h / 2;
+
+  // Helper to trace a stadium track oval (straightZ = ±27.0m, radius = R)
+  function traceTrackOval(radiusM: number) {
+    const straightHalfZ = 27.0;
+    ctx.beginPath();
+    ctx.ellipse(
+      cx,
+      cy - straightHalfZ * sy,
+      radiusM * sx,
+      radiusM * sy,
+      0,
+      Math.PI,
+      0,
+      false,
+    );
+    ctx.ellipse(
+      cx,
+      cy + straightHalfZ * sy,
+      radiusM * sx,
+      radiusM * sy,
+      0,
+      0,
+      Math.PI,
+      false,
+    );
+    ctx.closePath();
+  }
+
+  // 1. Dark perimeter drainage moat
+  ctx.fillStyle = '#11131A';
   ctx.fillRect(0, 0, w, h);
 
-  // Pitch inner margins (canvas maps 76m x 113m so apron blends seamlessly)
-  const totalW = 76;
-  const totalL = 113;
-  const pxPerM_X = w / totalW;
-  const pxPerM_Y = h / totalL;
+  // 2. Outer asphalt apron inside seating wall
+  traceTrackOval(51.4);
+  ctx.fillStyle = '#1B1E27';
+  ctx.fill();
 
-  const pitchLeft = ((totalW - STADIUM_3D.pitchWidth) / 2) * pxPerM_X;
-  const pitchTop = ((totalL - STADIUM_3D.pitchLength) / 2) * pxPerM_Y;
-  const pitchW = STADIUM_3D.pitchWidth * pxPerM_X;
-  const pitchH = STADIUM_3D.pitchLength * pxPerM_Y;
+  // 3. Iconic SUGBK 8-Lane Brick-Red Tartan Running Track (R: 42.8m .. 50.2m)
+  const trackOuterR = 50.2;
+  const trackInnerR = 42.8;
+  traceTrackOval(trackOuterR);
+  ctx.fillStyle = '#9E2E24';
+  ctx.fill();
 
-  // 18 alternating lush FIFA mowing stripes
+  // Subtle alternating tartan lane sheen + 8 crisp white lane markings
+  const lanes = 8;
+  for (let lane = 0; lane <= lanes; lane++) {
+    const r = trackInnerR + (lane / lanes) * (trackOuterR - trackInnerR);
+    traceTrackOval(r);
+    ctx.strokeStyle =
+      lane === 0 || lane === lanes
+        ? 'rgba(255, 255, 255, 0.82)'
+        : 'rgba(255, 255, 255, 0.45)';
+    ctx.lineWidth = Math.max(1.2, (lane === 0 ? 0.14 : 0.06) * sx);
+    ctx.stroke();
+  }
+
+  // 4. Inner green turf infield (D-zones + pitch apron) inside Lane 1 curb
+  traceTrackOval(trackInnerR);
+  ctx.fillStyle = '#277639';
+  ctx.fill();
+
+  // 5. FIFA 68m × 105m Football Pitch with 18 mowing stripes
+  const pitchLeft = cx - (STADIUM_3D.pitchWidth / 2) * sx;
+  const pitchTop = cy - (STADIUM_3D.pitchLength / 2) * sy;
+  const pitchW = STADIUM_3D.pitchWidth * sx;
+  const pitchH = STADIUM_3D.pitchLength * sy;
+
   const stripeCount = 18;
   const stripeH = pitchH / stripeCount;
   for (let i = 0; i < stripeCount; i++) {
-    ctx.fillStyle = i % 2 === 0 ? '#2F8742' : '#3A964D';
+    ctx.fillStyle = i % 2 === 0 ? '#2E8742' : '#39964D';
     ctx.fillRect(pitchLeft, pitchTop + i * stripeH, pitchW, stripeH + 1);
   }
 
-  // Subtle longitudinal mowing sheen
   for (let j = 0; j < 10; j++) {
     ctx.fillStyle = j % 2 === 0 ? 'rgba(255,255,255,0.018)' : 'rgba(0,0,0,0.018)';
     ctx.fillRect(pitchLeft + (j * pitchW) / 10, pitchTop, pitchW / 10, pitchH);
   }
 
-  // Crisp white markings
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.92)';
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
-  ctx.lineWidth = Math.max(3.5, 0.14 * pxPerM_X);
-  ctx.lineJoin = 'miter';
+  // Crisp white FIFA pitch markings
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.93)';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.93)';
+  ctx.lineWidth = Math.max(2.5, 0.14 * sx);
 
-  // Outer boundary
   ctx.strokeRect(pitchLeft, pitchTop, pitchW, pitchH);
 
-  // Halfway line
-  const midY = pitchTop + pitchH / 2;
-  const midX = pitchLeft + pitchW / 2;
+  // Halfway line & centre circle
   ctx.beginPath();
-  ctx.moveTo(pitchLeft, midY);
-  ctx.lineTo(pitchLeft + pitchW, midY);
+  ctx.moveTo(pitchLeft, cy);
+  ctx.lineTo(pitchLeft + pitchW, cy);
   ctx.stroke();
 
-  // Centre circle (9.15m radius) & centre spot
-  const circleR = 9.15 * pxPerM_X;
+  const circleR = 9.15 * sx;
   ctx.beginPath();
-  ctx.arc(midX, midY, circleR, 0, Math.PI * 2);
+  ctx.arc(cx, cy, circleR, 0, Math.PI * 2);
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.arc(midX, midY, 0.32 * pxPerM_X, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 0.32 * sx, 0, Math.PI * 2);
   ctx.fill();
 
-  // Penalty boxes (40.32m x 16.5m), goal boxes (18.32m x 5.5m), spots (11m), & D-arcs
-  const penW = 40.32 * pxPerM_X;
-  const penH = 16.5 * pxPerM_Y;
-  const goalAreaW = 18.32 * pxPerM_X;
-  const goalAreaH = 5.5 * pxPerM_Y;
-  const spotDist = 11.0 * pxPerM_Y;
-
-  // North end (top)
-  ctx.strokeRect(midX - penW / 2, pitchTop, penW, penH);
-  ctx.strokeRect(midX - goalAreaW / 2, pitchTop, goalAreaW, goalAreaH);
-  ctx.beginPath();
-  ctx.arc(midX, pitchTop + spotDist, 0.28 * pxPerM_X, 0, Math.PI * 2);
-  ctx.fill();
+  // Penalty boxes & goal boxes
+  const penW = 40.32 * sx;
+  const penH = 16.5 * sy;
+  const goalAreaW = 18.32 * sx;
+  const goalAreaH = 5.5 * sy;
+  const spotDist = 11.0 * sy;
   const dAngle = Math.acos((16.5 - 11.0) / 9.15);
+
+  // Utara (top)
+  ctx.strokeRect(cx - penW / 2, pitchTop, penW, penH);
+  ctx.strokeRect(cx - goalAreaW / 2, pitchTop, goalAreaW, goalAreaH);
   ctx.beginPath();
-  ctx.arc(midX, pitchTop + spotDist, circleR, Math.PI / 2 - dAngle, Math.PI / 2 + dAngle);
+  ctx.arc(cx, pitchTop + spotDist, 0.28 * sx, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, pitchTop + spotDist, circleR, Math.PI / 2 - dAngle, Math.PI / 2 + dAngle);
   ctx.stroke();
 
-  // South end (bottom)
-  ctx.strokeRect(midX - penW / 2, pitchTop + pitchH - penH, penW, penH);
-  ctx.strokeRect(midX - goalAreaW / 2, pitchTop + pitchH - goalAreaH, goalAreaW, goalAreaH);
+  // Selatan (bottom)
+  ctx.strokeRect(cx - penW / 2, pitchTop + pitchH - penH, penW, penH);
+  ctx.strokeRect(cx - goalAreaW / 2, pitchTop + pitchH - goalAreaH, goalAreaW, goalAreaH);
   ctx.beginPath();
-  ctx.arc(midX, pitchTop + pitchH - spotDist, 0.28 * pxPerM_X, 0, Math.PI * 2);
+  ctx.arc(cx, pitchTop + pitchH - spotDist, 0.28 * sx, 0, Math.PI * 2);
   ctx.fill();
   ctx.beginPath();
   ctx.arc(
-    midX,
+    cx,
     pitchTop + pitchH - spotDist,
     circleR,
     -Math.PI / 2 - dAngle,
@@ -105,17 +163,17 @@ function createPitchTexture(): THREE.CanvasTexture {
   );
   ctx.stroke();
 
-  // 4 corner arcs (1m radius)
-  const cornerR = 1.15 * pxPerM_X;
+  // Corner arcs
+  const cornerR = 1.15 * sx;
   const corners: Array<[number, number, number, number]> = [
     [pitchLeft, pitchTop, 0, Math.PI / 2],
     [pitchLeft + pitchW, pitchTop, Math.PI / 2, Math.PI],
     [pitchLeft + pitchW, pitchTop + pitchH, Math.PI, Math.PI * 1.5],
     [pitchLeft, pitchTop + pitchH, Math.PI * 1.5, Math.PI * 2],
   ];
-  for (const [cx, cy, a0, a1] of corners) {
+  for (const [px, py, a0, a1] of corners) {
     ctx.beginPath();
-    ctx.arc(cx, cy, cornerR, a0, a1);
+    ctx.arc(px, py, cornerR, a0, a1);
     ctx.stroke();
   }
 
@@ -159,32 +217,35 @@ function createLedRibbonTexture(): THREE.CanvasTexture {
   canvas.height = 64;
   const ctx = canvas.getContext('2d')!;
 
-  ctx.fillStyle = '#081233';
+  ctx.fillStyle = '#091029';
   ctx.fillRect(0, 0, 1024, 64);
 
-  // Top & bottom subtle accent strip
-  ctx.fillStyle = '#1D4ED8';
+  // Persib Blue & Persija Red-Orange accent strips
+  ctx.fillStyle = '#2563EB';
   ctx.fillRect(0, 0, 1024, 5);
+  ctx.fillStyle = '#EA580C';
   ctx.fillRect(0, 59, 1024, 5);
 
-  ctx.font = '700 24px Inter, system-ui, sans-serif';
+  ctx.font = '700 23px Inter, system-ui, sans-serif';
   ctx.textBaseline = 'middle';
 
   const items = [
-    { text: 'THE FINAL', color: '#F5CA37' },
-    { text: '·', color: '#60A5FA' },
+    { text: 'GELORA BUNG KARNO', color: '#F5CA37' },
+    { text: '·', color: '#94A3B8' },
+    { text: 'PERSIB', color: '#60A5FA' },
+    { text: 'VS', color: '#FFFFFF' },
+    { text: 'PERSIJA', color: '#FB923C' },
+    { text: '·', color: '#94A3B8' },
     { text: MATCH_INFO.kickoffTime, color: '#FFFFFF' },
-    { text: '·', color: '#60A5FA' },
-    { text: 'BARCELONA — MILAN', color: '#FFFFFF' },
-    { text: '·', color: '#60A5FA' },
+    { text: '·', color: '#94A3B8' },
   ];
 
-  let x = 28;
+  let x = 22;
   while (x < 1000) {
     for (const item of items) {
       ctx.fillStyle = item.color;
       ctx.fillText(item.text, x, 33);
-      x += ctx.measureText(item.text).width + 22;
+      x += ctx.measureText(item.text).width + 18;
       if (x >= 1000) break;
     }
   }
@@ -193,7 +254,7 @@ function createLedRibbonTexture(): THREE.CanvasTexture {
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.wrapS = THREE.RepeatWrapping;
   tex.wrapT = THREE.ClampToEdgeWrapping;
-  tex.repeat.set(16, 1);
+  tex.repeat.set(14, 1);
   return tex;
 }
 
@@ -224,7 +285,6 @@ function buildGoalGroup(
   crossbar.position.set(0, goalH, zGoalLine);
   group.add(leftPost, rightPost, crossbar);
 
-  // Back sloped net plane
   const slopeLen = Math.hypot(goalH, bottomDepth - topDepth);
   const backNetGeo = new THREE.PlaneGeometry(goalW, slopeLen);
   const backNet = new THREE.Mesh(backNetGeo, netMat);
@@ -233,14 +293,12 @@ function buildGoalGroup(
   backNet.rotation.x = depthSign * Math.atan2(bottomDepth - topDepth, goalH);
   group.add(backNet);
 
-  // Roof net plane
   const topNetGeo = new THREE.PlaneGeometry(goalW, topDepth);
   topNetGeo.rotateX(Math.PI / 2);
   const topNet = new THREE.Mesh(topNetGeo, netMat);
   topNet.position.set(0, goalH, zGoalLine + (depthSign * topDepth) / 2);
   group.add(topNet);
 
-  // Side trapezoid nets
   for (const side of [-1, 1]) {
     const sideShape = new THREE.BufferGeometry();
     const x = (side * goalW) / 2;
@@ -255,15 +313,11 @@ function buildGoalGroup(
       x, goalH, zTop,
       x, 0, zBot,
     ]);
-    const uvs = new Float32Array([
-      0, 0, 0, 1, 0.5, 1,
-      0, 0, 0.5, 1, 1, 0,
-    ]);
+    const uvs = new Float32Array([0, 0, 0, 1, 0.5, 1, 0, 0, 0.5, 1, 1, 0]);
     sideShape.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     sideShape.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
     sideShape.computeVertexNormals();
-    const sideMesh = new THREE.Mesh(sideShape, netMat);
-    group.add(sideMesh);
+    group.add(new THREE.Mesh(sideShape, netMat));
     disposables.push(sideShape);
   }
 
@@ -271,32 +325,85 @@ function buildGoalGroup(
   return group;
 }
 
+/**
+ * Builds the pitch-side rectangular LED perimeter board sitting just outside
+ * the football touchlines & goal lines (inside the red GBK running track!).
+ */
+function buildPitchLedBoardGeometry(): THREE.BufferGeometry {
+  const halfX = 37.2;
+  const halfZ = 56.2;
+  const cornerR = 4.0;
+  const height = 0.98;
+  const segsPerCorner = 8;
+
+  const pts: Array<[number, number]> = [];
+  const cornerDefs: Array<[number, number, number, number]> = [
+    [halfX - cornerR, -halfZ + cornerR, -Math.PI / 2, 0],
+    [halfX - cornerR, halfZ - cornerR, 0, Math.PI / 2],
+    [-halfX + cornerR, halfZ - cornerR, Math.PI / 2, Math.PI],
+    [-halfX + cornerR, -halfZ + cornerR, Math.PI, Math.PI * 1.5],
+  ];
+
+  for (const [cx, cz, a0, a1] of cornerDefs) {
+    for (let i = 0; i <= segsPerCorner; i++) {
+      const a = a0 + (i / segsPerCorner) * (a1 - a0);
+      pts.push([cx + Math.cos(a) * cornerR, cz + Math.sin(a) * cornerR]);
+    }
+  }
+  pts.push(pts[0]);
+
+  const positions: number[] = [];
+  const uvs: number[] = [];
+  const indices: number[] = [];
+  let totalDist = 0;
+  const dists = [0];
+
+  for (let i = 1; i < pts.length; i++) {
+    totalDist += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+    dists.push(totalDist);
+  }
+
+  for (let i = 0; i < pts.length; i++) {
+    const [x, z] = pts[i];
+    const u = dists[i] / totalDist;
+    positions.push(x, 0.04, z, x, 0.04 + height, z);
+    uvs.push(u, 0, u, 1);
+
+    if (i < pts.length - 1) {
+      const b = i * 2;
+      indices.push(b, b + 1, b + 2, b + 1, b + 3, b + 2);
+    }
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geo.setIndex(indices);
+  geo.computeVertexNormals();
+  return geo;
+}
+
 export function buildPitchAndGoals(scene: THREE.Scene): () => void {
   const disposables: Array<{ dispose: () => void }> = [];
 
-  // 1. Dark stadium perimeter track floor covering full bowl base
-  const trackGeo = new THREE.PlaneGeometry(160, 220);
-  trackGeo.rotateX(-Math.PI / 2);
-  const trackMat = new THREE.MeshStandardMaterial({
-    color: '#11131A',
-    roughness: 0.92,
-  });
-  const trackMesh = new THREE.Mesh(trackGeo, trackMat);
-  trackMesh.position.y = -0.04;
-  scene.add(trackMesh);
-  disposables.push(trackGeo, trackMat);
+  // 1. Dark base floor under entire oval bowl
+  const baseGeo = new THREE.PlaneGeometry(180, 240);
+  baseGeo.rotateX(-Math.PI / 2);
+  const baseMat = new THREE.MeshBasicMaterial({ color: '#11131A' });
+  const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+  baseMesh.position.y = -0.05;
+  scene.add(baseMesh);
+  disposables.push(baseGeo, baseMat);
 
-  // 2. Green turf & FIFA pitch markings
-  const pitchTex = createPitchTexture();
-  const pitchGeo = new THREE.PlaneGeometry(76, 113);
-  pitchGeo.rotateX(-Math.PI / 2);
-  const pitchMat = new THREE.MeshLambertMaterial({ map: pitchTex });
-  const pitchMesh = new THREE.Mesh(pitchGeo, pitchMat);
-  pitchMesh.position.y = 0;
-  scene.add(pitchMesh);
-  disposables.push(pitchTex, pitchGeo, pitchMat);
+  // 2. SUGBK Red Running Track + Green FIFA Pitch Texture
+  const arenaTex = createGbkArenaTexture();
+  const arenaGeo = new THREE.PlaneGeometry(114, 168);
+  arenaGeo.rotateX(-Math.PI / 2);
+  const arenaMat = new THREE.MeshLambertMaterial({ map: arenaTex });
+  scene.add(new THREE.Mesh(arenaGeo, arenaMat));
+  disposables.push(arenaTex, arenaGeo, arenaMat);
 
-  // 3. North & South 3D Goals with mesh nets
+  // 3. North & South 3D Goals with taut white mesh nets
   const postMat = new THREE.MeshStandardMaterial({
     color: '#F8FAFC',
     roughness: 0.3,
@@ -315,7 +422,7 @@ export function buildPitchAndGoals(scene: THREE.Scene): () => void {
   scene.add(buildGoalGroup(-STADIUM_3D.pitchLength / 2, -1, postMat, netMat, disposables));
   scene.add(buildGoalGroup(STADIUM_3D.pitchLength / 2, 1, postMat, netMat, disposables));
 
-  // 4. Four yellow corner flags
+  // 4. Corner flags
   const poleGeo = new THREE.CylinderGeometry(0.025, 0.025, 1.5, 6);
   const poleMat = new THREE.MeshBasicMaterial({ color: '#FFFFFF' });
   const flagGeo = new THREE.PlaneGeometry(0.42, 0.3);
@@ -337,10 +444,10 @@ export function buildPitchAndGoals(scene: THREE.Scene): () => void {
     }
   }
 
-  // 5. West sideline team dugouts / benches (visible from Section 104 in frames 051 & 057)
-  const dugoutGeo = new THREE.BoxGeometry(1.9, 2.05, 9.6);
+  // 5. Team Dugouts / Player Benches on Barat sideline (inside track apron)
+  const dugoutGeo = new THREE.BoxGeometry(1.75, 2.0, 9.2);
   const dugoutMat = new THREE.MeshStandardMaterial({
-    color: '#12141B',
+    color: '#13161E',
     roughness: 0.65,
     metalness: 0.2,
   });
@@ -348,47 +455,26 @@ export function buildPitchAndGoals(scene: THREE.Scene): () => void {
 
   for (const benchZ of [-10.5, 10.5]) {
     const dugout = new THREE.Mesh(dugoutGeo, dugoutMat);
-    dugout.position.set(-37.2, 1.02, benchZ);
+    dugout.position.set(-39.6, 1.0, benchZ);
     scene.add(dugout);
   }
 
-  // 6. Pitch-side LED perimeter advertising ribbon around the inner bowl
-  const ledSegs = 152;
-  const ledHeight = 1.02;
-  const ledInset = -1.25; // slightly in front of Lower Tier front wall
-  const ledPositions: number[] = [];
-  const ledUvs: number[] = [];
-  const ledIndices: number[] = [];
-
-  for (let i = 0; i <= ledSegs; i++) {
-    const rawSlot = (i / ledSegs) * TOTAL_SLOTS;
-    const f = evaluateBowlSlot3D(rawSlot);
-    const x = f.x + f.nx * ledInset;
-    const z = f.z + f.nz * ledInset;
-    const u = i / ledSegs;
-
-    ledPositions.push(x, 0.05, z, x, 0.05 + ledHeight, z);
-    ledUvs.push(u, 0, u, 1);
-
-    if (i < ledSegs) {
-      const base = i * 2;
-      ledIndices.push(base, base + 1, base + 2, base + 1, base + 3, base + 2);
-    }
-  }
-
-  const ledGeo = new THREE.BufferGeometry();
-  ledGeo.setAttribute('position', new THREE.Float32BufferAttribute(ledPositions, 3));
-  ledGeo.setAttribute('uv', new THREE.Float32BufferAttribute(ledUvs, 2));
-  ledGeo.setIndex(ledIndices);
-  ledGeo.computeVertexNormals();
-
+  // 6. Pitch-side LED advertising board: glowing LED screen facing inward across the pitch,
+  // with realistic matte black aluminum cabinet backing facing outward toward the track!
+  const ledGeo = buildPitchLedBoardGeometry();
   const ledTex = createLedRibbonTexture();
-  const ledMat = new THREE.MeshBasicMaterial({
+  const ledScreenMat = new THREE.MeshBasicMaterial({
     map: ledTex,
-    side: THREE.DoubleSide,
+    side: THREE.BackSide,
   });
-  scene.add(new THREE.Mesh(ledGeo, ledMat));
-  disposables.push(ledGeo, ledTex, ledMat);
+  const ledBackCabinetMat = new THREE.MeshStandardMaterial({
+    color: '#11141D',
+    roughness: 0.75,
+    side: THREE.FrontSide,
+  });
+  scene.add(new THREE.Mesh(ledGeo, ledScreenMat));
+  scene.add(new THREE.Mesh(ledGeo, ledBackCabinetMat));
+  disposables.push(ledGeo, ledTex, ledScreenMat, ledBackCabinetMat);
 
   return () => {
     disposables.forEach((d) => d.dispose());

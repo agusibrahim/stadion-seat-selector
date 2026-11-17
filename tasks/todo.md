@@ -36,6 +36,12 @@ Build a 100% visual & interactive replica of the **Barcelona – Milan Stadium S
   - [x] Anchor `<-> Drag to look around` dynamically `-top-12` above the sliding `SeatDetailSheet` so it adapts to every screen height
   - [x] Add mobile GPU optimizations (`1.75` DPR cap, `0.78x` offscreen motion-blur buffer & `22` jittered taps on mobile, adaptive `1024×1536` turf texture, non-passive `touchmove` scroll lock) + native Android/iOS hardware Back / swipe-back (`popstate`) support
   - [x] Verify across compact mobile (`360×640`), modern phone (`393×852`), and desktop (`1280×900`) viewports in Playwright (`CONSOLE_ERRORS: []`)
+- [x] Transform into **Stadion Utama Gelora Bung Karno (SUGBK) — Persib vs Persija**:
+  - [x] Update match metadata & Rupiah categories (`Persib – Persija`, `Stadion Utama GBK · Sab 23 Mei · 19:00 WIB`, `VIP Rp450rb`, `Cat 1 Rp250rb`, `Cat 2 Rp125rb`)
+  - [x] Re-engineer 2D & 3D parametric bowl geometry (`bowlCurve.ts`, `spatialMetrics.ts`, `stadiumConfig.ts`) into **SUGBK's true 36-sector / 12-Zona Olympic Elliptical Oval** (`101–136` Tribun Bawah, `201–236` Tribun Atas, 4 Marathon Gates & Barat VVIP Royal Box)
+  - [x] Add **SUGBK's iconic 8-lane brick-red 400m athletics running track** around the FIFA pitch in both 2D (`PitchSvg.tsx`, `StadiumMiniMap.tsx`) and 3D (`buildPitchAndGoals.ts`)
+  - [x] Build **SUGBK's signature Merah-Putih (Red & White) wave-mosaic 3D seats** in `buildStadiumBowl.ts` + **Temu Gelang** radial-ribbed oval canopy & `19:00 WIB PERSIB — PERSIJA` jumbotrons in `buildRoofAndScreens.ts`
+  - [x] Verify 2D overview, zoomed sectors, ray-pinned zoom-in + fast blur, POV drag directions, and mobile responsiveness via Playwright screenshots, then commit cleanly
 
 ## Review & Verification Summary
 - **Typecheck & Production Build:** `bun run build` (`tsc -b && vite build`) passes with zero TypeScript errors and zero bundle warnings (`three` isolated into its own vendor chunk).

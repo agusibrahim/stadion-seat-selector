@@ -27,12 +27,14 @@ export const MatchInfoModal: React.FC<MatchInfoModalProps> = ({ open, onClose })
             <h3 className="text-[20px] font-bold text-white mt-0.5">
               {MATCH_INFO.title}
             </h3>
-            <p className="text-[13px] text-[#8B8E9E] mt-0.5">{MATCH_INFO.subtitle}</p>
+            <p className="text-[13px] text-[#8B8E9E] mt-0.5">
+              {MATCH_INFO.venueName} · {MATCH_INFO.venueCity}
+            </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close modal"
+            aria-label="Tutup informasi"
             className="w-8 h-8 rounded-full bg-white/[0.07] flex items-center justify-center text-white/80 hover:bg-white/[0.14] cursor-pointer"
           >
             <X className="w-4 h-4" />
@@ -41,38 +43,35 @@ export const MatchInfoModal: React.FC<MatchInfoModalProps> = ({ open, onClose })
 
         <div className="mt-4 space-y-2.5 border-t border-white/[0.08] pt-4">
           <p className="text-[12px] font-medium text-[#8B8E9E] uppercase tracking-wider">
-            Ticket Categories
+            Kategori Tiket SUGBK (Zona 1–12)
           </p>
           {CATEGORY_LIST.map((cat) => (
             <div
               key={cat.id}
-              className="flex items-center justify-between py-1.5 text-[13.5px]"
+              className="flex items-center justify-between py-1.5 text-[13.5px] gap-2"
             >
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2.5 min-w-0">
                 <span
-                  className="w-3 h-3 rounded-[3px]"
+                  className="w-3 h-3 rounded-[3px] shrink-0"
                   style={{ backgroundColor: cat.mapColor }}
                 />
-                <span className="text-white font-medium">{cat.label}</span>
-                <span className="text-[#7F8393] text-[12.5px]">
+                <span className="text-white font-medium shrink-0">{cat.label}</span>
+                <span className="text-[#7F8393] text-[12px] truncate">
                   {cat.id === 1
-                    ? 'Lower sideline stands'
+                    ? 'VIP Barat & Timur Bawah'
                     : cat.id === 2
-                      ? 'Lower goal ends & upper sidelines'
-                      : 'Upper corners & goal ends'}
+                      ? 'Utara/Selatan Bawah & Barat/Timur Atas'
+                      : 'Tribun Atas Utara, Selatan & Sudut'}
                 </span>
               </div>
-              <span className="text-white font-semibold">
-                {MATCH_INFO.currency}
-                {cat.price}
-              </span>
+              <span className="text-white font-semibold shrink-0">{cat.fullPrice}</span>
             </div>
           ))}
         </div>
 
         <p className="mt-4 text-[12px] text-[#757989] leading-relaxed">
-          Tap any stadium section to auto-orient toward the pitch, pick an available seat,
-          and preview the exact 3D sightline before adding to basket.
+          Pilih sektor pada denah oval Gelora Bung Karno, tentukan kursi yang tersedia,
+          lalu tekan <strong className="text-white/90">Lanjut</strong> untuk zoom-in nyata ke pandangan 3D dari kursi Anda.
         </p>
       </div>
     </div>

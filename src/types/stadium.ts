@@ -13,6 +13,8 @@ export interface TicketCategory {
   id: CategoryId;
   label: string;
   price: number;
+  shortPrice: string; // e.g. "Rp450rb" for compact mobile pills
+  fullPrice: string; // e.g. "Rp450.000" for bottom bar & ticket CTA
   mapColor: string;
   hoverColor: string;
   dotColor: string;
@@ -20,12 +22,13 @@ export interface TicketCategory {
 
 export interface SectionDefinition {
   id: number;
-  slotIndex: number; // 0..37 around the parametric stadium loop
+  slotIndex: number; // 0..35 around the 36-sector SUGBK elliptical loop
+  zona: number; // Zona 1..12 authentic SUGBK zone numbering
   tier: TierType;
   category: CategoryId;
-  available: boolean; // false for tunnels / press boxes (109, 116, 128, 203, 222, 223)
-  standLabel: string; // e.g. "West stand", "South end", "North-east corner"
-  zoneBadge: string; // e.g. "HALFWAY LINE", "BEHIND THE GOAL", "UPPER CORNER"
+  available: boolean; // false for 4 marathon gates & VVIP broadcast box
+  standLabel: string; // e.g. "Tribun Barat · Zona 1"
+  zoneBadge: string; // e.g. "VIP BARAT · ZONA 1", "TRIBUN UTARA · ZONA 4"
   rows: number;
 }
 

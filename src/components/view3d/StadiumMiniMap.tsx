@@ -13,40 +13,50 @@ export const StadiumMiniMap: React.FC<StadiumMiniMapProps> = ({
   yawOffsetRad,
 }) => {
   const activeGeo = SECTION_GEOMETRIES_2D.get(seat.sectionId);
-  // Look direction in 2D SVG plane: inward normal rotated by -yawOffsetRad
   const baseAngle = activeGeo ? activeGeo.inwardAngleRad : -Math.PI / 2;
   const lookAngle = baseAngle - yawOffsetRad;
   const rayLength = 155;
   const rayEndX = seat.pos2d.x + Math.cos(lookAngle) * rayLength;
   const rayEndY = seat.pos2d.y + Math.sin(lookAngle) * rayLength;
 
+  const trackPath =
+    'M -98 -66 A 98 104 0 0 1 98 -66 L 98 66 A 98 104 0 0 1 -98 66 Z';
+
   return (
-    <div className="w-[76px] h-[92px] shrink-0 flex items-center justify-center">
+    <div className="w-[74px] h-[92px] shrink-0 flex items-center justify-center">
       <svg
-        viewBox="-232 -282 464 564"
+        viewBox="-226 -294 452 588"
         className="w-full h-full overflow-visible"
       >
-        {/* Central mini pitch */}
-        <rect
-          x={-89}
-          y={-137}
-          width={178}
-          height={274}
-          rx={6}
-          fill="#18452B"
-          stroke="rgba(255,255,255,0.4)"
-          strokeWidth={4}
-        />
-        <line
-          x1={-89}
-          y1={0}
-          x2={89}
-          y2={0}
-          stroke="rgba(255,255,255,0.38)"
-          strokeWidth={4}
+        {/* Mini SUGBK red running track oval */}
+        <path
+          d={trackPath}
+          fill="#5C1F1B"
+          stroke="rgba(255,255,255,0.22)"
+          strokeWidth={3.2}
         />
 
-        {/* Mini stadium bowl sections */}
+        {/* Central mini pitch */}
+        <rect
+          x={-70}
+          y={-108}
+          width={140}
+          height={216}
+          rx={5}
+          fill="#18472B"
+          stroke="rgba(255,255,255,0.42)"
+          strokeWidth={3.8}
+        />
+        <line
+          x1={-70}
+          y1={0}
+          x2={70}
+          y2={0}
+          stroke="rgba(255,255,255,0.4)"
+          strokeWidth={3.8}
+        />
+
+        {/* Mini SUGBK oval bowl sectors */}
         {ALL_SECTIONS.map((sec) => {
           const geo = SECTION_GEOMETRIES_2D.get(sec.id);
           if (!geo) return null;

@@ -10,3 +10,7 @@
   1. Keep the 3D WebGL scene persistently mounted & GPU-warm underneath the 2D layer (`0ms` shader/mesh init stall on transition).
   2. Measure the clicked 2D seat element's exact screen `(btnCenterX, btnCenterY, btnWidth, ndcX, ndcY)`.
   3. Compute initial 3D altitude `h0` where the 3D highlighted chair projects to the exact pixel width `btnWidth` at `(ndcX, ndcY)`, then zoom exponentially (`h = h0 * pow(h1 / h0, u)`) using a **ray-pinned camera pose** (`computeRayPinnedPose` in the section's orthonormal basis `(R, W, B)`) while simultaneously scaling the 2D layer by `syncScale = h0 / hCur` (`1x → ~10x`) around `transformOrigin: (btnCenterX, btnCenterY)` with perspective tilt and optical radial zoom motion blur, before settling into `eyePosition` and sweeping `lookAt` up across the pitch.
+
+## 3. Verify 3D First-Person Drag Signs Visually Against Mini-Map & Panorama Convention
+- **Mistake:** Negating `yawRad` while keeping `+pitchRad` in Rodrigues spherical head-look inverted horizontal panning relative to natural panorama drag and desynchronized the mini-map sightline ray.
+- **Rule:** Always test both `dx > 0` (drag right) and `dy > 0` (drag down) in Playwright screenshots and verify that the 3D panorama and the 2D mini-map sightline ray rotate in exact agreement.
