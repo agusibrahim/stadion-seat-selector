@@ -1,4 +1,4 @@
-# 3D Stadium Seat Selector — Gelora Bung Karno (Persib vs Persija)
+# 3D Stadium Seat Selector
 
 An interactive mobile-first stadium seat selection web app featuring a continuous **ray-pinned exponential zoom-in with optical fast-blur** from the 2D stadium seat map directly into an interactive **Three.js 3D first-person view** from your exact seat inside **Gelora Bung Karno Main Stadium (SUGBK), Jakarta**.
 
