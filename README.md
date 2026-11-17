@@ -2,7 +2,7 @@
 
 An interactive mobile-first stadium seat selection web app featuring a continuous **ray-pinned exponential zoom-in with optical fast-blur** from the 2D stadium seat map directly into an interactive **Three.js 3D first-person view** from your exact seat inside **Gelora Bung Karno Main Stadium (SUGBK), Jakarta**.
 
-**Live Demo:** [https://agusibrahim.github.io/stadion-seat-selector/](https://agusibrahim.github.io/stadion-seat-selector/)
+**Live Demo:** [https://www.agusibrah.im/stadion-seat-selector/](https://www.agusibrah.im/stadion-seat-selector/)
 
 <p align="center">
   <img src="docs/demo.gif" width="320" alt="3D Stadium Seat Selector Demo — Gelora Bung Karno" />
